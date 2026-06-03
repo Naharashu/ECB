@@ -42,10 +42,12 @@ enum class reg : uint8_t {
 struct value_ {
     enum Value : uint8_t {
         Reg,
-        Imm
+        Imm, 
+        Var
     } value;
     reg reg;
-    int64_t imm; 
+    int64_t imm=0; 
+    std::string varname="";
 };
 
 
@@ -55,6 +57,21 @@ struct Inst {
     value_ dst;
     value_ lhs;
     value_ rhs;
+
+    std::vector<value_> extra;
+
+    static Inst make_binary(opcode &o, value_ &d, value_ &a, value_ &b) {
+        return Inst{o, d, a, b, {}};
+    }
+
+    static Inst make_unary(opcode &o, value_ &d, value_ &a) {
+        return Inst{o, d, a, {}, {}};
+    }
+
+    static Inst make_inst(opcode &o, value_ &d, value_ &a, value_ &b, std::vector<value_> &e) {
+        return Inst{o, d, a, b, e};
+    }
+
 };
 
 struct IRblock {
@@ -63,7 +80,9 @@ struct IRblock {
         func,
         var,
         class_,
-        array_
+        array_,
+        jmp,
+        call,
     } Block_type;
     std::vector<Inst> data;
     std::string name;

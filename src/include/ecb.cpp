@@ -1,4 +1,4 @@
-#include "include/ecb.h"
+#include "ecb.h"
 #include <ostream>
 #include <string>
 #include <vector>
@@ -51,9 +51,3 @@ struct assembler {
         }
     }
 };
-
-int main() {
-    std::vector<IRblock> abc {
-        {IRblock::func, {{ld, {value_::Imm, 42}}}}
-    }
-}
