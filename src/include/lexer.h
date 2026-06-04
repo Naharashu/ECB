@@ -37,22 +37,32 @@ enum token_type : uint8_t {
     DEFINE,
     RETURN,
     GOTO,
+    LABEL,
     IF,
     ELIF,
     ELSE,
     PHI,
+    BYTE,
+    WORD,
+    INT_,
+    LONG,
+    FLOAT_,
+    DOUBLE,
+    PTR,
+    L_SQBRCK,
+    R_SQBRCK,
     EOF_
 } token_type;
 
 struct token {
     enum token_type t;
     std::string str_val;
-    int64_t i;
+    uint64_t i;
     double f;
     uint64_t l;
     uint64_t c;
 
-    static token make(enum token_type t_, std::string s, int64_t i_, uint64_t l, uint64_t c, double f=0) {
+    static token make(enum token_type t_, std::string s, uint64_t i_, uint64_t l, uint64_t c, double f=0) {
         return token{t_, s, i_, f, l,c};
     }
 };
@@ -66,20 +76,40 @@ struct lexer {
         uint64_t size = code.size();
         for(uint64_t i=0;i<size;) {
             uint8_t c = code[i];
-            if(isalpha(c)==0) {
+            if(isalpha(c)) {
                 std::string id;
-                while(((isalpha(code[i])==0)||code[i]=='_'||(isdigit(code[i])==0))&&i<size) {
+                while(((isalpha(code[i]))||code[i]=='_'||(isdigit(code[i])))&&i<size) {
                     id.push_back(code[i]);
                     i++;
                     char_++;
                 }
-                lexed.push_back(token::make(ID, id, 0, line, char_));
+                enum token_type t = ID;
+                if(id=="true") t = TRUE; 
+                if(id=="false") t = FALSE; 
+                if(id=="define") t = DEFINE; 
+                if(id=="goto") t = GOTO;
+                if(id=="return") t = RETURN;  
+                if(id=="if") t = IF; 
+                if(id=="elif") t = ELIF;
+                if(id=="else") t = ELSE; 
+                if(id=="ptr") t = PTR; 
+                if(id=="byte") t = BYTE;
+                if(id=="word") t = WORD;
+                if(id=="int") t = INT_;
+                if(id=="long") t = LONG; 
+                if(id=="f32") t = FLOAT_;
+                if(id=="f64") t = DOUBLE;  
+                if(code[i]==':') {
+                    i++;
+                    t = LABEL;
+                }
+                lexed.push_back(token::make(t, id, 0, line, char_));
                 break;
             }
-            if(isdigit(c)==0) {
+            if(isdigit(c)) {
                 std::string number;
                 bool float_ = false;
-                while((code[i]=='.'||(isdigit(code[i])==0))&&i<size) {
+                while((code[i]=='.'||(isdigit(code[i])))&&i<size) {
                     if(code[i]=='.') float_=true;
                     number.push_back(code[i]);
                     i++;
@@ -162,6 +192,18 @@ struct lexer {
                     i++;
                     
                     lexed.push_back(token::make(R_BRACE, "", 0, line, char_++));
+                    break;
+                }
+                case '[': {
+                    i++;
+                    
+                    lexed.push_back(token::make(L_SQBRCK, "", 0, line, char_++));
+                    break;
+                }
+                case ']': {
+                    i++;
+                    
+                    lexed.push_back(token::make(R_SQBRCK, "", 0, line, char_++));
                     break;
                 }
                 case '=': {
