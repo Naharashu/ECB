@@ -6,6 +6,9 @@
 #include <cstdlib>
 #include <string>
 #include <vector>
+
+std::vector<std::string> labels;
+
 enum token_type : uint8_t {
     INT,
     ID,
@@ -38,13 +41,10 @@ enum token_type : uint8_t {
     RETURN,
     GOTO,
     LABEL,
-    IF,
-    ELIF,
-    ELSE,
     PHI,
     BYTE,
+    HALF,
     WORD,
-    INT_,
     LONG,
     FLOAT_,
     DOUBLE,
@@ -89,19 +89,17 @@ struct lexer {
                 if(id=="define") t = DEFINE; 
                 if(id=="goto") t = GOTO;
                 if(id=="return") t = RETURN;  
-                if(id=="if") t = IF; 
-                if(id=="elif") t = ELIF;
-                if(id=="else") t = ELSE; 
                 if(id=="ptr") t = PTR; 
                 if(id=="byte") t = BYTE;
+                if(id=="half") t = HALF;
                 if(id=="word") t = WORD;
-                if(id=="int") t = INT_;
                 if(id=="long") t = LONG; 
                 if(id=="f32") t = FLOAT_;
                 if(id=="f64") t = DOUBLE;  
                 if(code[i]==':') {
                     i++;
                     t = LABEL;
+                    labels.emplace_back(id);
                 }
                 lexed.push_back(token::make(t, id, 0, line, char_));
                 break;
