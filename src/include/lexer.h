@@ -4,6 +4,7 @@
 #include <cctype>
 #include <cstdint>
 #include <cstdlib>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -41,16 +42,18 @@ enum token_type : uint8_t {
     RETURN,
     GOTO,
     LABEL,
-    PHI,
-    BYTE,
-    HALF,
-    WORD,
+    CONST,
+    CHAR,
+    SHORT,
+    INT_,
     LONG,
     FLOAT_,
     DOUBLE,
     PTR,
     L_SQBRCK,
     R_SQBRCK,
+    COMA,
+    SEMI,
     EOF_
 } token_type;
 
@@ -86,16 +89,16 @@ struct lexer {
                 enum token_type t = ID;
                 if(id=="true") t = TRUE; 
                 if(id=="false") t = FALSE; 
-                if(id=="define") t = DEFINE; 
-                if(id=="goto") t = GOTO;
+                if(id=="float") t = DEFINE; 
+                if(id=="const") t = CONST;
                 if(id=="return") t = RETURN;  
                 if(id=="ptr") t = PTR; 
-                if(id=="byte") t = BYTE;
-                if(id=="half") t = HALF;
-                if(id=="word") t = WORD;
+                if(id=="char") t = CHAR;
+                if(id=="short") t = SHORT;
+                if(id=="int") t = INT_;
                 if(id=="long") t = LONG; 
-                if(id=="f32") t = FLOAT_;
-                if(id=="f64") t = DOUBLE;  
+                if(id=="float") t = FLOAT_;
+                if(id=="double") t = DOUBLE;  
                 if(code[i]==':') {
                     i++;
                     t = LABEL;
@@ -123,6 +126,42 @@ struct lexer {
                     lexed.push_back(token::make(INT, "", val, line, char_));
                 }
                 break;
+            }
+            if (c == '"') {
+                i++;
+                std::string str;
+                while (i < code.size() && code[i] != '"') {
+                    if (code[i] == '\\' && i + 1 < code.size()) {
+                    i++;
+                    switch (code[i]) {
+                    case 'n':
+                        str += '\n';
+                        break;
+                    case 't':
+                        str += '\t';
+                        break;
+                    case '"':
+                        str += '"';
+                        break;
+                    case '\\':
+                        str += '\\';
+                        break;
+                    default:
+                        str += code[i];
+                        break;
+                    }
+                    } else {
+                        str += code[i];
+                    }
+                    i++;
+                }
+                if(i==code.size()) {
+                    std::cerr << "Error: unterminated string literal\n";
+                    exit(1);
+                }
+                i++;
+                lexed.emplace_back(token::make(STRING, str, 0, line, char_++));
+                continue;
             }
             uint8_t n = i + 1 < size ? code[i+1] : 0;
             switch (c) {

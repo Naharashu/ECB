@@ -1,0 +1,16 @@
+variables
+
+int x = 0;
+int y = x+1;
+long z = 2*3;
+
+functions
+
+int add(int a, int b) {
+    return a+b;
+}
+
+int main() { // doesnt require int argc, char** argv
+    print("You typed " + argv[1] + "\n"); // builtin print function
+    return 0;
+}
